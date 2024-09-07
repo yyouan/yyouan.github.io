@@ -22,13 +22,19 @@ async function __main__() {
 
     // 創建場景
     const scene = canvas({width: 800, height: 400, background: color.white});
-    scene.camera.pos = vec(0, 0, 3);
-    scene.camera.axis = vec(0, 0, -1);
+    scene.camera.pos = vec(-1.5, 0.5, 3);  // 調整相機位置
+    scene.camera.axis = vec(1.5, -0.5, -3);  // 調整相機方向
 
-    // 創建 CO2 分子
-    const C = sphere({pos: vec(0, 0, 0), radius: size, color: color.gray(0.5)});
-    const O1 = sphere({pos: vec(-L0, 0, 0), radius: size, color: color.red});
-    const O2 = sphere({pos: vec(L0, 0, 0), radius: size, color: color.red});
+    // 創建按鈕
+    const buttonHeight = 0.1;  // 按鈕高度
+    button({text: "Symmetric", pos: scene.title_anchor, bind: toggle_mode, color: color.blue, background: color.yellow});
+
+    // 創建 CO2 分子，位置調整到左上角
+    const xOffset = -1.5;  // 分子位置的x偏移量
+    const yOffset = 0.5;  // 分子位置的y偏移量
+    const C = sphere({pos: vec(xOffset, yOffset, 0), radius: size, color: color.gray(0.5)});
+    const O1 = sphere({pos: vec(xOffset - L0, yOffset, 0), radius: size, color: color.red});
+    const O2 = sphere({pos: vec(xOffset + L0, yOffset, 0), radius: size, color: color.red});
     const bond1 = cylinder({pos: C.pos, axis: O1.pos.sub(C.pos), radius: size/4, color: color.gray(0.8)});
     const bond2 = cylinder({pos: C.pos, axis: O2.pos.sub(C.pos), radius: size/4, color: color.gray(0.8)});
 
@@ -40,9 +46,6 @@ async function __main__() {
         symmetric = !symmetric;
         b.text = symmetric ? "Symmetric" : "Asymmetric";
     }
-
-    // 創建按鈕
-    button({text: "Symmetric", pos: scene.title_anchor, bind: toggle_mode});
 
     // 時間步長
     const dt = 0.01;
@@ -57,14 +60,14 @@ async function __main__() {
         
         if (symmetric) {
             // 對稱伸縮振動
-            O1.pos = vec(-L0 - displacement, 0, 0);
-            O2.pos = vec(L0 + displacement, 0, 0);
-            C.pos = vec(0, 0, 0);
+            O1.pos = vec(xOffset - L0 - displacement, yOffset, 0);
+            O2.pos = vec(xOffset + L0 + displacement, yOffset, 0);
+            C.pos = vec(xOffset, yOffset, 0);
         } else {
             // 非對稱伸縮振動
-            O1.pos = vec(-L0 - displacement/2, 0, 0);
-            O2.pos = vec(L0 - displacement/2, 0, 0);
-            C.pos = vec(displacement, 0, 0);
+            O1.pos = vec(xOffset - L0 - displacement/2, yOffset, 0);
+            O2.pos = vec(xOffset + L0 - displacement/2, yOffset, 0);
+            C.pos = vec(xOffset + displacement, yOffset, 0);
         }
         
         // 更新鍵
