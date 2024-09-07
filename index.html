@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO2 Vibration Modes</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="https://www.glowscript.org/package/glow.3.2.min.js"></script>
+</head>
+<body>
+<div id="glowscript"></div>
+<script type="text/javascript">
+window.__context = { glowscript_container: $("#glowscript").removeAttr("id") }
+
+async function __main__() {
+    // 設置常數
+    const L0 = 0.2;       // 平衡鍵長
+    const size = 0.05;    // 原子大小
+    const amplitude = 0.05;  // 振動幅度
+    const frequency = 2;  // 振動頻率（Hz）
+
+    // 創建場景
+    const scene = canvas({width: 800, height: 400, background: color.white});
+    scene.camera.pos = vec(0, 0, 3);
+    scene.camera.axis = vec(0, 0, -1);
+
+    // 創建 CO2 分子
+    const C = sphere({pos: vec(0, 0, 0), radius: size, color: color.gray(0.5)});
+    const O1 = sphere({pos: vec(-L0, 0, 0), radius: size, color: color.red});
+    const O2 = sphere({pos: vec(L0, 0, 0), radius: size, color: color.red});
+    const bond1 = cylinder({pos: C.pos, axis: O1.pos.sub(C.pos), radius: size/4, color: color.gray(0.8)});
+    const bond2 = cylinder({pos: C.pos, axis: O2.pos.sub(C.pos), radius: size/4, color: color.gray(0.8)});
+
+    // 振動模態
+    let symmetric = true;
+
+    // 切換振動模態的函數
+    function toggle_mode(b) {
+        symmetric = !symmetric;
+        b.text = symmetric ? "Symmetric" : "Asymmetric";
+    }
+
+    // 創建按鈕
+    button({text: "Symmetric", pos: scene.title_anchor, bind: toggle_mode});
+
+    // 時間步長
+    const dt = 0.01;
+    let t = 0;
+
+    // 主循環
+    while (true) {
+        await rate(100);
+        
+        // 計算簡諧運動位置
+        const displacement = amplitude * Math.sin(2 * Math.PI * frequency * t);
+        
+        if (symmetric) {
+            // 對稱伸縮振動
+            O1.pos = vec(-L0 - displacement, 0, 0);
+            O2.pos = vec(L0 + displacement, 0, 0);
+            C.pos = vec(0, 0, 0);
+        } else {
+            // 非對稱伸縮振動
+            O1.pos = vec(-L0 - displacement/2, 0, 0);
+            O2.pos = vec(L0 - displacement/2, 0, 0);
+            C.pos = vec(displacement, 0, 0);
+        }
+        
+        // 更新鍵
+        bond1.pos = C.pos;
+        bond1.axis = O1.pos.sub(C.pos);
+        bond2.pos = C.pos;
+        bond2.axis = O2.pos.sub(C.pos);
+        
+        // 更新時間
+        t += dt;
+    }
+}
+
+__main__();
+</script>
+</body>
+</html>
